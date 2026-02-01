@@ -126,7 +126,23 @@ Use the seed script to queue a batch of posts:
 python scripts/seed_schedule.py examples/seed_posts.csv http://localhost:8000
 ```
 
-Example files live in `examples/seed_posts.csv` and `examples/seed_posts.json`.
+Example files live in `examples/seed_posts.csv`, `examples/seed_posts.json`, and `examples/seed_posts_existing.csv`.
+
+### CSV schema
+The seed script supports two modes in the same CSV: generate content from a topic **or** ingest prewritten posts.
+
+| Column | Required | Description |
+| --- | --- | --- |
+| `topic` | Required if `text` is empty | Topic used by the content generator. |
+| `text` | Required if `topic` is empty | Prewritten post text to schedule directly. |
+| `tone` | Optional | Tone for generated posts (defaults to `neutral`). |
+| `media_type` | Optional | Use `TEXT` or `IMAGE` when providing `text`. |
+| `media_url` | Optional | Image URL for `IMAGE` posts. |
+| `target_regions` | Optional | JSON array string such as `["UK", "US"]`. |
+| `scheduled_date` | Optional | ISO-8601 timestamp. If blank, the scheduler picks the next optimal slot. |
+| `user_id` | Optional | Threads user id (defaults to `me`). |
+
+When you include `text`, the API skips generation and schedules the post exactly as provided.
 
 ## Project Structure
 ```

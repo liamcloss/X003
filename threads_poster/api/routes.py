@@ -4,7 +4,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from threads_poster.clients.content_generator import ContentGenerator
 from threads_poster.clients.threads_client import ThreadsClient
@@ -22,11 +22,20 @@ router = APIRouter()
 
 
 class QueueRequest(BaseModel):
-    topic: str
+    topic: str | None = None
+    text: str | None = None
     tone: str = "neutral"
+    media_type: str | None = None
+    media_url: str | None = None
     scheduled_time: datetime | None = None
     target_regions: list[str] = Field(default_factory=list)
     user_id: str
+
+    @model_validator(mode="after")
+    def validate_content(self) -> "QueueRequest":
+        if not self.topic and not self.text:
+            raise ValueError("Either topic or text is required")
+        return self
 
 
 class QueueResponse(BaseModel):
@@ -36,17 +45,25 @@ class QueueResponse(BaseModel):
 
 @router.post("/queue", response_model=QueueResponse)
 async def queue_post(request: QueueRequest) -> QueueResponse:
-    generator = ContentGenerator()
-    generated = generator.generate_post(request.topic, request.tone)
+    if request.text:
+        text = request.text
+        media_url = request.media_url
+        media_type = request.media_type or ("IMAGE" if request.media_url else "TEXT")
+    else:
+        generator = ContentGenerator()
+        generated = generator.generate_post(request.topic or "", request.tone)
+        text = generated["text"]
+        media_type = generated["media_type"]
+        media_url = generated.get("media_url")
     scheduled_time = request.scheduled_time or compute_optimal_time(request.target_regions)
     if scheduled_time > datetime.now(UTC) + timedelta(days=365):
         raise HTTPException(status_code=400, detail="Scheduled time exceeds 365 day limit")
     with SessionLocal() as session:
         post = crud.create_post(
             session,
-            text=generated["text"],
-            media_type=generated["media_type"],
-            media_url=generated.get("media_url"),
+            text=text,
+            media_type=media_type,
+            media_url=media_url,
             scheduled_time=scheduled_time,
             metadata={"target_regions": request.target_regions},
         )
