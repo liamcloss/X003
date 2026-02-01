@@ -1,0 +1,16 @@
+[
+  {
+    "topic": "Weekly product update",
+    "tone": "friendly",
+    "target_regions": ["UK"],
+    "scheduled_date": "2025-03-05T08:00:00Z",
+    "user_id": "me"
+  },
+  {
+    "topic": "Community spotlight",
+    "tone": "celebratory",
+    "target_regions": ["US"],
+    "scheduled_date": "2025-03-12T13:30:00Z",
+    "user_id": "me"
+  }
+]
