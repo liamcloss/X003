@@ -30,6 +30,36 @@ DATABASE_URL=sqlite:///./threads.db
 SCHEDULER_TIMEZONE=UTC
 ```
 
+## Platform Setup
+
+### Ubuntu (bash)
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+Start the API + scheduler:
+
+```bash
+./scripts/run_api.sh
+```
+
+### Windows (PowerShell)
+
+```powershell
+py -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+Start the API + scheduler:
+
+```powershell
+scripts\run_api.bat
+```
+
 ## Database Initialization
 Create tables automatically on app startup or run manually:
 
