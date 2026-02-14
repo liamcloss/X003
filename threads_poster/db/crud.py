@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
 from threads_poster.db.models import Metric, Post, PostStatus
+from threads_poster.db.models import ReplyLog
 
 
 def create_post(
@@ -82,3 +83,25 @@ def add_metric(
 def list_metrics_for_post(session: Session, post_id: str) -> list[Metric]:
     statement = select(Metric).where(Metric.post_id == post_id)
     return list(session.scalars(statement).all())
+
+
+def log_reply(session: Session, post_id: str, keyword: str, reply_text: str) -> ReplyLog:
+    reply = ReplyLog(
+        post_id=post_id,
+        keyword=keyword,
+        reply_text=reply_text,
+    )
+    session.add(reply)
+    session.commit()
+    session.refresh(reply)
+    return reply
+
+
+def has_replied_to_post(session: Session, post_id: str) -> bool:
+    statement = select(ReplyLog).where(ReplyLog.post_id == post_id).limit(1)
+    return session.scalar(statement) is not None
+
+
+def count_replies_since(session: Session, since: datetime) -> int:
+    statement = select(func.count()).select_from(ReplyLog).where(ReplyLog.replied_at >= since)
+    return int(session.scalar(statement) or 0)

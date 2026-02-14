@@ -47,3 +47,13 @@ class Metric(Base):
     extra_metadata: Mapped[dict | None] = mapped_column("metadata", JSON)
 
     post: Mapped[Post] = relationship("Post", back_populates="metrics")
+
+
+class ReplyLog(Base):
+    __tablename__ = "reply_log"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    post_id: Mapped[str] = mapped_column(String, unique=True, index=True)
+    keyword: Mapped[str] = mapped_column(String)
+    reply_text: Mapped[str] = mapped_column(Text)
+    replied_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
